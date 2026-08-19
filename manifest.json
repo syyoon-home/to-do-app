@@ -1,0 +1,24 @@
+{
+  "name": "하루 - 할일 & 타임테이블",
+  "short_name": "하루",
+  "description": "체크리스트, 캘린더, 타임테이블을 한번에",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#EEF2FE",
+  "theme_color": "#7C7AF0",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

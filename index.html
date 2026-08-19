@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>하루 - 할일 & 타임테이블</title>
+<meta name="theme-color" content="#7C7AF0" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.47.0/iconfont/tabler-icons.min.css" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- 상단 헤더 -->
+  <header class="app-header">
+    <div class="header-top">
+      <p class="header-eyebrow" id="header-date-sub">2026년 8월</p>
+      <button class="icon-btn ghost-on-header" id="profile-btn" aria-label="프로필">
+        <i class="ti ti-user" aria-hidden="true"></i>
+      </button>
+    </div>
+    <h1 class="header-title" id="header-date-main">19일 수요일</h1>
+    <p class="header-summary" id="header-summary">오늘 할 일 3개 · 활동 6시간 30분</p>
+  </header>
+
+  <!-- 메인 콘텐츠 -->
+  <main class="app-main">
+
+    <!-- 투두 화면 -->
+    <section class="view" id="view-todo" data-view="todo">
+      <div class="week-strip" id="week-strip"></div>
+
+      <div class="section-row">
+        <h2>오늘 할 일</h2>
+        <span class="progress-label" id="todo-progress">0/0 완료</span>
+      </div>
+      <div class="todo-list" id="todo-list"></div>
+
+      <button class="add-fab" id="add-todo-btn" aria-label="할일 추가">
+        <i class="ti ti-plus" aria-hidden="true"></i>
+      </button>
+    </section>
+
+    <!-- 캘린더 화면 -->
+    <section class="view hidden" id="view-calendar" data-view="calendar">
+      <div class="cal-nav">
+        <button class="icon-btn" id="cal-prev" aria-label="이전 달"><i class="ti ti-chevron-left" aria-hidden="true"></i></button>
+        <h2 id="cal-month-label">2026년 8월</h2>
+        <button class="icon-btn" id="cal-next" aria-label="다음 달"><i class="ti ti-chevron-right" aria-hidden="true"></i></button>
+      </div>
+      <div class="cal-weekdays">
+        <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+
+      <div class="section-row" style="margin-top:20px;">
+        <h2 id="cal-selected-label">선택한 날짜</h2>
+      </div>
+      <div class="day-events" id="cal-day-events"></div>
+    </section>
+
+    <!-- 타임테이블 화면 -->
+    <section class="view hidden" id="view-timetable" data-view="timetable">
+      <p class="tt-summary" id="tt-summary">오늘 총 0시간 활동</p>
+
+      <div class="tt-axis" id="tt-axis"></div>
+      <div class="tt-rule"></div>
+      <div class="tt-rows" id="tt-rows"></div>
+
+      <div class="tt-now-card" id="tt-now-card">
+        <span class="dot"></span>
+        <p id="tt-now-text">지금 진행중인 일정 없음</p>
+      </div>
+
+      <div class="legend" id="tt-legend"></div>
+
+      <button class="add-fab" id="add-block-btn" aria-label="일정 추가">
+        <i class="ti ti-plus" aria-hidden="true"></i>
+      </button>
+    </section>
+
+  </main>
+
+  <!-- 하단 탭바 -->
+  <nav class="tab-bar">
+    <button class="tab-btn active" data-tab="todo">
+      <i class="ti ti-checklist" aria-hidden="true"></i>
+      <span>체크리스트</span>
+    </button>
+    <button class="tab-btn" data-tab="calendar">
+      <i class="ti ti-calendar" aria-hidden="true"></i>
+      <span>캘린더</span>
+    </button>
+    <button class="tab-btn" data-tab="timetable">
+      <i class="ti ti-clock" aria-hidden="true"></i>
+      <span>타임테이블</span>
+    </button>
+  </nav>
+</div>
+
+<!-- 할일 추가 시트 -->
+<div class="sheet-backdrop" id="todo-sheet-backdrop">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h3>새 할일</h3>
+    <input type="text" id="todo-input" placeholder="할일을 입력하세요" maxlength="60" />
+    <label class="check-row">
+      <input type="checkbox" id="todo-important" />
+      <span>중요 표시</span>
+    </label>
+    <div class="sheet-actions">
+      <button class="btn-secondary" id="todo-cancel">취소</button>
+      <button class="btn-primary" id="todo-save">추가</button>
+    </div>
+  </div>
+</div>
+
+<!-- 일정(타임블록) 추가 시트 -->
+<div class="sheet-backdrop" id="block-sheet-backdrop">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h3>새 일정</h3>
+    <input type="text" id="block-title" placeholder="일정 제목" maxlength="40" />
+    <div class="time-row">
+      <div class="time-field">
+        <label for="block-start">시작</label>
+        <input type="time" id="block-start" value="09:00" />
+      </div>
+      <div class="time-field">
+        <label for="block-end">종료</label>
+        <input type="time" id="block-end" value="10:00" />
+      </div>
+    </div>
+    <label for="block-category">카테고리</label>
+    <select id="block-category">
+      <option value="exercise">운동</option>
+      <option value="work" selected>업무</option>
+      <option value="social">약속</option>
+      <option value="dev">개발</option>
+      <option value="etc">기타</option>
+    </select>
+    <p class="error-text hidden" id="block-error">시간을 올바르게 입력해주세요</p>
+    <div class="sheet-actions">
+      <button class="btn-secondary" id="block-cancel">취소</button>
+      <button class="btn-primary" id="block-save">추가</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
