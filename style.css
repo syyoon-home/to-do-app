@@ -92,6 +92,20 @@ button, input, select {
   font-size: 18px;
 }
 
+/* SVG 아이콘 공통 (외부 폰트 대신 인라인 스프라이트 사용, 오프라인에서도 항상 렌더링됨) */
+.icon {
+  width: 1.1em;
+  height: 1.1em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
 /* Main */
 .app-main {
   flex: 1;
@@ -123,13 +137,47 @@ h3 {
 }
 
 /* Week strip (todo view) */
+.week-header-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
 .week-strip {
   display: flex;
   gap: 8px;
   overflow-x: auto;
   padding-bottom: 4px;
-  margin-bottom: 14px;
+  flex: 1;
 }
+.week-strip.hidden { display: none; }
+.week-expand-btn {
+  background: var(--card);
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+.week-expand-btn.expanded {
+  transform: rotate(180deg);
+  color: var(--header);
+}
+.todo-month-wrap {
+  background: var(--card);
+  border-radius: var(--radius-md);
+  padding: 14px 12px;
+  margin-bottom: 16px;
+}
+.todo-month-wrap.hidden { display: none; }
+.todo-month-wrap .cal-nav { margin-bottom: 10px; }
+.todo-month-wrap .cal-nav h2 { font-size: 14px; }
 .week-day {
   min-width: 42px;
   text-align: center;
@@ -191,8 +239,8 @@ h3 {
   border-color: #4FD8B0;
   color: #fff;
 }
-.todo-item.done .todo-check i { display: block; }
-.todo-check i { display: none; font-size: 14px; }
+.todo-item.done .todo-check .icon { display: block; }
+.todo-check .icon { display: none; width: 13px; height: 13px; stroke-width: 3; color: #fff; }
 .todo-text {
   flex: 1;
   font-size: 14px;
@@ -317,6 +365,13 @@ h3 {
   flex-direction: column;
   gap: 8px;
 }
+.day-subheading {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 4px 0 2px;
+  font-weight: 500;
+}
+.day-subheading:first-child { margin-top: 0; }
 .day-event-chip {
   display: flex;
   align-items: center;
@@ -451,7 +506,7 @@ h3 {
   cursor: pointer;
   padding: 4px 12px;
 }
-.tab-btn i { font-size: 21px; }
+.tab-btn .icon { width: 21px; height: 21px; }
 .tab-btn.active { color: var(--header); }
 
 /* Sheets (modals) */

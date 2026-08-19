@@ -43,7 +43,8 @@
   // ---------- State ----------
   let state = loadState();
   let selectedDate = new Date();
-  let calViewMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+  let viewMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+  let weekExpanded = false;
 
   function loadState() {
     try {
@@ -75,6 +76,10 @@
   const headerSub = $('#header-date-sub');
   const headerSummary = $('#header-summary');
   const weekStrip = $('#week-strip');
+  const weekExpandBtn = $('#week-expand-btn');
+  const todoMonthWrap = $('#todo-month-wrap');
+  const todoMonthLabel = $('#todo-month-label');
+  const todoMonthGrid = $('#todo-month-grid');
   const todoList = $('#todo-list');
   const todoProgress = $('#todo-progress');
 
@@ -121,6 +126,55 @@
     }
   }
 
+  function setWeekExpanded(expanded) {
+    weekExpanded = expanded;
+    weekStrip.classList.toggle('hidden', expanded);
+    todoMonthWrap.classList.toggle('hidden', !expanded);
+    weekExpandBtn.classList.toggle('expanded', expanded);
+    if (expanded) renderTodoMonthGrid();
+  }
+  weekExpandBtn.addEventListener('click', () => setWeekExpanded(!weekExpanded));
+
+  function renderTodoMonthGrid() {
+    if (todoMonthWrap.classList.contains('hidden')) return;
+    todoMonthLabel.textContent = `${viewMonth.getFullYear()}년 ${viewMonth.getMonth() + 1}월`;
+    buildMonthGrid(todoMonthGrid, (d) => {
+      selectedDate = d;
+      if (d.getMonth() !== viewMonth.getMonth()) viewMonth = new Date(d.getFullYear(), d.getMonth(), 1);
+      setWeekExpanded(false);
+      renderAll();
+    });
+  }
+
+  // 체크리스트 항목 DOM 생성 (투두 화면, 캘린더 상세에서 공용으로 사용)
+  function createTodoItemEl(todo, dateKey) {
+    const item = document.createElement('div');
+    item.className = 'todo-item' + (todo.done ? ' done' : '');
+    item.innerHTML = `
+      <button class="todo-check" aria-label="완료 표시"><svg class="icon" aria-hidden="true"><use href="#icon-check"/></svg></button>
+      <p class="todo-text"></p>
+      ${todo.important ? '<span class="badge-important">중요</span>' : ''}
+      <button class="todo-delete" aria-label="삭제"><svg class="icon" aria-hidden="true"><use href="#icon-x"/></svg></button>
+    `;
+    item.querySelector('.todo-text').textContent = todo.text;
+    item.querySelector('.todo-check').addEventListener('click', () => {
+      todo.done = !todo.done;
+      saveState();
+      renderTodoList();
+      renderCalendar();
+      renderHeader();
+    });
+    item.querySelector('.todo-delete').addEventListener('click', () => {
+      const list = getTodos(dateKey);
+      state.todos[dateKey] = list.filter((t) => t.id !== todo.id);
+      saveState();
+      renderTodoList();
+      renderCalendar();
+      renderHeader();
+    });
+    return item;
+  }
+
   function renderTodoList() {
     const dateKey = toKey(selectedDate);
     const todos = getTodos(dateKey);
@@ -136,38 +190,14 @@
     todoProgress.textContent = `${doneCount}/${todos.length} 완료`;
 
     todos.forEach((todo) => {
-      const item = document.createElement('div');
-      item.className = 'todo-item' + (todo.done ? ' done' : '');
-      item.innerHTML = `
-        <button class="todo-check" aria-label="완료 표시"><i class="ti ti-check" aria-hidden="true"></i></button>
-        <p class="todo-text"></p>
-        ${todo.important ? '<span class="badge-important">중요</span>' : ''}
-        <button class="todo-delete" aria-label="삭제"><i class="ti ti-x" aria-hidden="true"></i></button>
-      `;
-      item.querySelector('.todo-text').textContent = todo.text;
-      item.querySelector('.todo-check').addEventListener('click', () => {
-        todo.done = !todo.done;
-        saveState();
-        renderTodoList();
-        renderHeader();
-      });
-      item.querySelector('.todo-delete').addEventListener('click', () => {
-        const list = getTodos(dateKey);
-        state.todos[dateKey] = list.filter((t) => t.id !== todo.id);
-        saveState();
-        renderTodoList();
-        renderHeader();
-      });
-      todoList.appendChild(item);
+      todoList.appendChild(createTodoItemEl(todo, dateKey));
     });
   }
 
   // ---------- Render: Calendar view ----------
-  function renderCalendar() {
-    calMonthLabel.textContent = `${calViewMonth.getFullYear()}년 ${calViewMonth.getMonth() + 1}월`;
-    calGrid.innerHTML = '';
-
-    const firstOfMonth = new Date(calViewMonth.getFullYear(), calViewMonth.getMonth(), 1);
+  function buildMonthGrid(gridEl, onSelect) {
+    gridEl.innerHTML = '';
+    const firstOfMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth(), 1);
     const startOffset = firstOfMonth.getDay();
     const gridStart = addDays(firstOfMonth, -startOffset);
     const today = new Date();
@@ -177,7 +207,7 @@
       const dateKey = toKey(d);
       const cell = document.createElement('button');
       cell.className = 'cal-cell';
-      if (d.getMonth() !== calViewMonth.getMonth()) cell.classList.add('other-month');
+      if (d.getMonth() !== viewMonth.getMonth()) cell.classList.add('other-month');
       if (isSameDay(d, today)) cell.classList.add('today');
       if (isSameDay(d, selectedDate)) cell.classList.add('selected');
 
@@ -186,36 +216,64 @@
       const dotCount = Math.min(3, (todos.length > 0 ? 1 : 0) + (blocks.length > 0 ? 1 : 0));
 
       cell.innerHTML = `<span>${d.getDate()}</span><span class="dot-row">${'<span></span>'.repeat(dotCount)}</span>`;
-      cell.addEventListener('click', () => {
-        selectedDate = d;
-        if (d.getMonth() !== calViewMonth.getMonth()) {
-          calViewMonth = new Date(d.getFullYear(), d.getMonth(), 1);
-        }
-        renderAll();
-      });
-      calGrid.appendChild(cell);
+      cell.addEventListener('click', () => onSelect(d));
+      gridEl.appendChild(cell);
     }
+  }
 
-    calSelectedLabel.textContent = `${selectedDate.getMonth() + 1}월 ${selectedDate.getDate()}일 일정`;
+  function renderCalendar() {
+    calMonthLabel.textContent = `${viewMonth.getFullYear()}년 ${viewMonth.getMonth() + 1}월`;
+    buildMonthGrid(calGrid, (d) => {
+      selectedDate = d;
+      if (d.getMonth() !== viewMonth.getMonth()) {
+        viewMonth = new Date(d.getFullYear(), d.getMonth(), 1);
+      }
+      renderAll();
+    });
+
+    calSelectedLabel.textContent = `${selectedDate.getMonth() + 1}월 ${selectedDate.getDate()}일`;
     renderDayEvents();
   }
 
   function renderDayEvents() {
     const dateKey = toKey(selectedDate);
+    const todos = getTodos(dateKey);
     const blocks = [...getBlocks(dateKey)].sort((a, b) => timeToMinutes(a.start) - timeToMinutes(b.start));
     calDayEvents.innerHTML = '';
-    if (blocks.length === 0) {
-      calDayEvents.innerHTML = '<p class="empty-state">이 날은 등록된 일정이 없어요.</p>';
+
+    if (todos.length === 0 && blocks.length === 0) {
+      calDayEvents.innerHTML = '<p class="empty-state">이 날은 등록된 할 일과 일정이 없어요.</p>';
       return;
     }
-    blocks.forEach((b) => {
-      const meta = CATEGORY_META[b.category] || CATEGORY_META.etc;
-      const chip = document.createElement('div');
-      chip.className = 'day-event-chip';
-      chip.innerHTML = `<span class="dot" style="background:${meta.color}"></span><p></p><span class="time">${b.start} - ${b.end}</span>`;
-      chip.querySelector('p').textContent = b.title;
-      calDayEvents.appendChild(chip);
-    });
+
+    if (todos.length > 0) {
+      const doneCount = todos.filter((t) => t.done).length;
+      const heading = document.createElement('p');
+      heading.className = 'day-subheading';
+      heading.textContent = `할 일 ${doneCount}/${todos.length}`;
+      calDayEvents.appendChild(heading);
+
+      const list = document.createElement('div');
+      list.className = 'todo-list';
+      todos.forEach((todo) => list.appendChild(createTodoItemEl(todo, dateKey)));
+      calDayEvents.appendChild(list);
+    }
+
+    if (blocks.length > 0) {
+      const heading = document.createElement('p');
+      heading.className = 'day-subheading';
+      heading.textContent = `일정 ${blocks.length}개`;
+      calDayEvents.appendChild(heading);
+
+      blocks.forEach((b) => {
+        const meta = CATEGORY_META[b.category] || CATEGORY_META.etc;
+        const chip = document.createElement('div');
+        chip.className = 'day-event-chip';
+        chip.innerHTML = `<span class="dot" style="background:${meta.color}"></span><p></p><span class="time">${b.start} - ${b.end}</span>`;
+        chip.querySelector('p').textContent = b.title;
+        calDayEvents.appendChild(chip);
+      });
+    }
   }
 
   // ---------- Render: Timetable view ----------
@@ -250,13 +308,14 @@
         <div class="tt-track">
           <div class="tt-bar" style="left:${leftPct}%; width:${widthPct}%; background:${meta.color};" title="${b.start} - ${b.end}"></div>
         </div>
-        <button class="todo-delete" aria-label="삭제"><i class="ti ti-x" aria-hidden="true"></i></button>
+        <button class="todo-delete" aria-label="삭제"><svg class="icon" aria-hidden="true"><use href="#icon-x"/></svg></button>
       `;
       row.querySelector('.tt-row-label').textContent = b.title;
       row.querySelector('.todo-delete').addEventListener('click', () => {
         state.blocks[dateKey] = getBlocks(dateKey).filter((x) => x.id !== b.id);
         saveState();
         renderTimetable();
+        renderCalendar();
         renderHeader();
       });
       ttRows.appendChild(row);
@@ -323,6 +382,7 @@
     saveState();
     todoSheetBackdrop.classList.remove('open');
     renderTodoList();
+    renderCalendar();
     renderHeader();
   });
 
@@ -364,23 +424,26 @@
     saveState();
     blockSheetBackdrop.classList.remove('open');
     renderTimetable();
+    renderCalendar();
     renderHeader();
   });
 
   // ---------- Calendar nav ----------
-  $('#cal-prev').addEventListener('click', () => {
-    calViewMonth = new Date(calViewMonth.getFullYear(), calViewMonth.getMonth() - 1, 1);
+  function changeMonth(delta) {
+    viewMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth() + delta, 1);
     renderCalendar();
-  });
-  $('#cal-next').addEventListener('click', () => {
-    calViewMonth = new Date(calViewMonth.getFullYear(), calViewMonth.getMonth() + 1, 1);
-    renderCalendar();
-  });
+    renderTodoMonthGrid();
+  }
+  $('#cal-prev').addEventListener('click', () => changeMonth(-1));
+  $('#cal-next').addEventListener('click', () => changeMonth(1));
+  $('#todo-cal-prev').addEventListener('click', () => changeMonth(-1));
+  $('#todo-cal-next').addEventListener('click', () => changeMonth(1));
 
   // ---------- Render all ----------
   function renderAll() {
     renderHeader();
     renderWeekStrip();
+    renderTodoMonthGrid();
     renderTodoList();
     renderCalendar();
     renderTimetable();

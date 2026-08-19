@@ -9,11 +9,49 @@
 <link rel="apple-touch-icon" href="icons/icon-192.png" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-<link rel="preconnect" href="https://cdnjs.cloudflare.com" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.47.0/iconfont/tabler-icons.min.css" />
 <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+
+<!-- 아이콘 스프라이트 (오프라인에서도 항상 보이도록 인라인 SVG 사용) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="icon-user" viewBox="0 0 24 24">
+      <circle cx="12" cy="8" r="4"/>
+      <path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7"/>
+    </symbol>
+    <symbol id="icon-plus" viewBox="0 0 24 24">
+      <path d="M12 5v14M5 12h14"/>
+    </symbol>
+    <symbol id="icon-check" viewBox="0 0 24 24">
+      <path d="M5 12l5 5L19 7"/>
+    </symbol>
+    <symbol id="icon-x" viewBox="0 0 24 24">
+      <path d="M6 6l12 12M18 6L6 18"/>
+    </symbol>
+    <symbol id="icon-checklist" viewBox="0 0 24 24">
+      <path d="M4 6h6M4 12h6M4 18h6"/>
+      <path d="M14 6l2 2 4-4M14 16l2 2 4-4"/>
+    </symbol>
+    <symbol id="icon-calendar" viewBox="0 0 24 24">
+      <rect x="4" y="5" width="16" height="15" rx="3"/>
+      <path d="M4 10h16M8 3v4M16 3v4"/>
+    </symbol>
+    <symbol id="icon-clock" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="8.5"/>
+      <path d="M12 7.5V12l3 2"/>
+    </symbol>
+    <symbol id="icon-chevron-left" viewBox="0 0 24 24">
+      <path d="M15 6l-6 6 6 6"/>
+    </symbol>
+    <symbol id="icon-chevron-right" viewBox="0 0 24 24">
+      <path d="M9 6l6 6-6 6"/>
+    </symbol>
+    <symbol id="icon-chevron-down" viewBox="0 0 24 24">
+      <path d="M6 9l6 6 6-6"/>
+    </symbol>
+  </defs>
+</svg>
 
 <div class="app-shell">
 
@@ -22,7 +60,7 @@
     <div class="header-top">
       <p class="header-eyebrow" id="header-date-sub">2026년 8월</p>
       <button class="icon-btn ghost-on-header" id="profile-btn" aria-label="프로필">
-        <i class="ti ti-user" aria-hidden="true"></i>
+        <svg class="icon" aria-hidden="true"><use href="#icon-user"/></svg>
       </button>
     </div>
     <h1 class="header-title" id="header-date-main">19일 수요일</h1>
@@ -34,7 +72,24 @@
 
     <!-- 투두 화면 -->
     <section class="view" id="view-todo" data-view="todo">
-      <div class="week-strip" id="week-strip"></div>
+      <div class="week-header-row">
+        <div class="week-strip" id="week-strip"></div>
+        <button class="week-expand-btn" id="week-expand-btn" aria-label="달력 펼치기">
+          <svg class="icon" aria-hidden="true"><use href="#icon-chevron-down"/></svg>
+        </button>
+      </div>
+
+      <div class="todo-month-wrap hidden" id="todo-month-wrap">
+        <div class="cal-nav">
+          <button class="icon-btn" id="todo-cal-prev" aria-label="이전 달"><svg class="icon" aria-hidden="true"><use href="#icon-chevron-left"/></svg></button>
+          <h2 id="todo-month-label">2026년 8월</h2>
+          <button class="icon-btn" id="todo-cal-next" aria-label="다음 달"><svg class="icon" aria-hidden="true"><use href="#icon-chevron-right"/></svg></button>
+        </div>
+        <div class="cal-weekdays">
+          <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
+        </div>
+        <div class="cal-grid" id="todo-month-grid"></div>
+      </div>
 
       <div class="section-row">
         <h2>오늘 할 일</h2>
@@ -43,16 +98,16 @@
       <div class="todo-list" id="todo-list"></div>
 
       <button class="add-fab" id="add-todo-btn" aria-label="할일 추가">
-        <i class="ti ti-plus" aria-hidden="true"></i>
+        <svg class="icon" aria-hidden="true"><use href="#icon-plus"/></svg>
       </button>
     </section>
 
     <!-- 캘린더 화면 -->
     <section class="view hidden" id="view-calendar" data-view="calendar">
       <div class="cal-nav">
-        <button class="icon-btn" id="cal-prev" aria-label="이전 달"><i class="ti ti-chevron-left" aria-hidden="true"></i></button>
+        <button class="icon-btn" id="cal-prev" aria-label="이전 달"><svg class="icon" aria-hidden="true"><use href="#icon-chevron-left"/></svg></button>
         <h2 id="cal-month-label">2026년 8월</h2>
-        <button class="icon-btn" id="cal-next" aria-label="다음 달"><i class="ti ti-chevron-right" aria-hidden="true"></i></button>
+        <button class="icon-btn" id="cal-next" aria-label="다음 달"><svg class="icon" aria-hidden="true"><use href="#icon-chevron-right"/></svg></button>
       </div>
       <div class="cal-weekdays">
         <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
@@ -81,7 +136,7 @@
       <div class="legend" id="tt-legend"></div>
 
       <button class="add-fab" id="add-block-btn" aria-label="일정 추가">
-        <i class="ti ti-plus" aria-hidden="true"></i>
+        <svg class="icon" aria-hidden="true"><use href="#icon-plus"/></svg>
       </button>
     </section>
 
@@ -90,15 +145,15 @@
   <!-- 하단 탭바 -->
   <nav class="tab-bar">
     <button class="tab-btn active" data-tab="todo">
-      <i class="ti ti-checklist" aria-hidden="true"></i>
+      <svg class="icon" aria-hidden="true"><use href="#icon-checklist"/></svg>
       <span>체크리스트</span>
     </button>
     <button class="tab-btn" data-tab="calendar">
-      <i class="ti ti-calendar" aria-hidden="true"></i>
+      <svg class="icon" aria-hidden="true"><use href="#icon-calendar"/></svg>
       <span>캘린더</span>
     </button>
     <button class="tab-btn" data-tab="timetable">
-      <i class="ti ti-clock" aria-hidden="true"></i>
+      <svg class="icon" aria-hidden="true"><use href="#icon-clock"/></svg>
       <span>타임테이블</span>
     </button>
   </nav>
